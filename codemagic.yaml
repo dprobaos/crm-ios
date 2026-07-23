@@ -1,0 +1,73 @@
+# ================================================================
+#  codemagic.yaml  —  Build iOS SEM MAC LOCAL.
+#  O Codemagic gera o projeto Xcode via XcodeGen (project.yml) e
+#  builda → TestFlight. Você nunca precisa abrir o Xcode.
+#
+#  IMPORTANTE: conecte a pasta `ios_crm_app/` como raiz do repositório
+#  (igual aos outros apps), para que este codemagic.yaml fique na raiz.
+#
+#  PRÉ-REQUISITOS no Codemagic (uma vez):
+#   - Repositório conectado (raiz = ios_crm_app/).
+#   - Integração "App Store Connect" (chave API). Reutilize a mesma dos
+#     outros apps: "NeuroVoice ASC".
+#   - Um app criado no App Store Connect com bundle com.dprobaos.crm.
+#   - O grupo de variáveis "ios_signing" com CM_CERTIFICATE_PRIVATE_KEY.
+# ================================================================
+workflows:
+  ios-crm:
+    name: Neuro Voice CRM iOS (TestFlight)
+    # Build automático ao dar push na main.
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+          source: true
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: "NeuroVoice ASC"
+    environment:
+      groups:
+        - ios_signing          # contém CM_CERTIFICATE_PRIVATE_KEY (secured)
+      xcode: latest
+      vars:
+        XCODE_PROJECT: "CRMApp.xcodeproj"
+        XCODE_SCHEME: "CRMApp"
+        BUNDLE_ID: "com.dprobaos.crm"
+    scripts:
+      - name: Gerar o projeto Xcode (XcodeGen)
+        script: |
+          brew install xcodegen 2>/dev/null || true
+          # Build number incremental (evita "version already used" no upload)
+          BN="${BUILD_NUMBER:-$(date +%s)}"
+          echo "Build number: $BN"
+          sed -i '' "s/CURRENT_PROJECT_VERSION: \"1\"/CURRENT_PROJECT_VERSION: \"$BN\"/" project.yml || true
+          xcodegen generate
+      - name: Assinatura automática (App Store Connect)
+        script: |
+          set -e
+          keychain initialize
+          echo "===== FETCH APP (com.dprobaos.crm) ====="
+          app-store-connect fetch-signing-files "com.dprobaos.crm" \
+            --type IOS_APP_STORE \
+            --certificate-key=@env:CM_CERTIFICATE_PRIVATE_KEY \
+            --create
+          echo "===== ADD CERTIFICATES ====="
+          keychain add-certificates
+          echo "===== USE PROFILES ====="
+          xcode-project use-profiles --verbose
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        # Só faz upload (build fica disponível p/ teste INTERNO sem revisão).
+        # Para teste externo, preencha as "Test Information" no App Store
+        # Connect e mude para true.
+        submit_to_testflight: false

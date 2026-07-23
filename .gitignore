@@ -1,0 +1,7 @@
+# XcodeGen gera isto no Codemagic — não versionar
+*.xcodeproj
+build/
+DerivedData/
+.DS_Store
+*.ipa
+*.xcarchive

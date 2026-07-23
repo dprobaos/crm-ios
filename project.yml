@@ -1,0 +1,56 @@
+# ================================================================
+#  project.yml  —  Spec do XcodeGen (gera o CRMApp.xcodeproj sem Mac)
+#  O Codemagic roda `xcodegen generate` e depois builda.
+#  Target único: a casca WebView + Face ID do Neuro Voice CRM.
+# ================================================================
+name: CRMApp
+options:
+  bundleIdPrefix: com.dprobaos
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: "4P5D9V48GJ"
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.0"
+    GENERATE_INFOPLIST_FILE: YES
+
+targets:
+  CRMApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: CRMApp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dprobaos.crm
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: CRMApp/Info.plist
+      properties:
+        CFBundleDisplayName: "NeuroVoice CRM"
+        NSFaceIDUsageDescription: "Usamos o Face ID para você entrar no CRM com rapidez e segurança, sem digitar a senha."
+        NSCameraUsageDescription: "Usado para tirar a foto de perfil que aparece no ranking de leads."
+        NSPhotoLibraryUsageDescription: "Usado para escolher a foto de perfil a partir da galeria."
+        ITSAppUsesNonExemptEncryption: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+
+schemes:
+  CRMApp:
+    build:
+      targets:
+        CRMApp: all
+    archive:
+      config: Release
