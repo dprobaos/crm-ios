@@ -7,7 +7,7 @@ import SwiftUI
 struct CRMApp: App {
     var body: some Scene {
         WindowGroup {
-            WebView(url: URL(string: "https://neurovoice.com.br/crm/")!)
+            WebView(url: URL(string: "https://probaos.com.br/crm/")!)
                 .ignoresSafeArea()
         }
     }

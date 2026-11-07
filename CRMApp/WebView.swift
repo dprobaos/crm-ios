@@ -13,7 +13,7 @@
 import SwiftUI
 import WebKit
 
-private let SITE_HOST = "neurovoice.com.br"
+private let SITE_HOST = "probaos.com.br"
 
 struct WebView: UIViewRepresentable {
     let url: URL
